@@ -117,6 +117,3 @@ Local production run: `npm run build && npm start`.
 - Clinician dashboard: anxiety flags surfaced to the care team pre-procedure
 - Per-page image generation replacing the SVG illustration placeholders
 
-## License
-
-MIT
