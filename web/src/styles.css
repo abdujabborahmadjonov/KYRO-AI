@@ -1190,3 +1190,108 @@ button.mini {
   box-shadow: none;
   color: inherit;
 }
+
+/* ---------- Story library ---------- */
+.nav-pill-link {
+  display: inline-block;
+  background: #fff;
+  color: var(--pink);
+  border: 2px solid #ffd0dc;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.nav-pill-link:hover {
+  background: #fff1f4;
+}
+
+.library-intro {
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0 0 18px;
+}
+
+.library-intro code {
+  background: #fff1ec;
+  border: 1px solid var(--card-border);
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 0.85em;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.story-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
+  background: var(--card);
+  border: 2px solid var(--card-border);
+  border-radius: 24px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.story-card:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.story-cover {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  display: block;
+}
+
+.story-cover-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  background: var(--grad);
+}
+
+.story-card-body {
+  padding: 14px 16px 16px;
+}
+
+.story-card-body h3 {
+  margin: 0 0 4px;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.story-card-body .dedication {
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 6px;
+}
+
+.story-card-body .muted {
+  font-size: 0.8rem;
+  margin: 0 0 8px;
+}
+
+.library-reader {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.library-reader .card.storybook {
+  width: 100%;
+}

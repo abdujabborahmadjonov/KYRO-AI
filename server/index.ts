@@ -82,6 +82,40 @@ app.post("/api/story", async (req, res) => {
   }
 });
 
+// Story library — every storybook ever filed to the chart, newest first.
+// The chart IS the history: this reads the DocumentReferences back out.
+app.get("/api/stories", async (_req, res) => {
+  try {
+    const { getFhirStore } = await import("./medplum.js");
+    const docs = await (getFhirStore()).search("DocumentReference");
+    const stories = docs
+      .filter((d: any) => d.type?.text === "Pre-procedure preparation storybook")
+      .map((d: any) => {
+        try {
+          const story = JSON.parse(Buffer.from(d.content?.[0]?.attachment?.data ?? "", "base64").toString("utf8"));
+          return {
+            id: d.id,
+            date: d.date ?? null,
+            title: story.title,
+            dedication: story.dedication,
+            pageCount: story.pages?.length ?? 0,
+            cover: story.pages?.find((p: any) => p.illustration_url)?.illustration_url ?? null,
+            coverEmoji: story.pages?.[0]?.illustration_emoji ?? "📖",
+            fears: story.fears_addressed ?? [],
+            story,
+          };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => (b.date ?? "").localeCompare(a.date ?? ""));
+    res.json(stories);
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 // Parent-facing coverage summary (Stedi test mode or mock)
 app.get("/api/coverage", async (_req, res) => {
   try {

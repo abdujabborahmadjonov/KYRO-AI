@@ -60,6 +60,9 @@ export default function App() {
           <span className="tagline">Brave stories for brave kids 🌟</span>
         </div>
         <div className="nav-right">
+          <a className="nav-pill-link" href="/stories">
+            📚 Story library
+          </a>
           <button className="mini" onClick={music.toggle} title="Background music">
             {music.enabled ? "🎵 music on" : "🔇 music off"}
           </button>

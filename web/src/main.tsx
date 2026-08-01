@@ -2,10 +2,10 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { Landing } from "./Landing";
+import { StoryLibrary } from "./StoryLibrary";
 import "./styles.css";
 
-const isApp = window.location.pathname.startsWith("/app");
+const path = window.location.pathname;
+const page = path.startsWith("/app") ? <App /> : path.startsWith("/stories") ? <StoryLibrary /> : <Landing />;
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>{isApp ? <App /> : <Landing />}</React.StrictMode>,
-);
+createRoot(document.getElementById("root")!).render(<React.StrictMode>{page}</React.StrictMode>);

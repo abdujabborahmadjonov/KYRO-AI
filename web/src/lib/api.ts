@@ -55,7 +55,20 @@ async function json<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface StorySummary {
+  id: string;
+  date: string | null;
+  title: string;
+  dedication: string;
+  pageCount: number;
+  cover: string | null;
+  coverEmoji: string;
+  fears: string[];
+  story: Story;
+}
+
 export const api = {
+  stories: () => fetch("/api/stories").then((r) => json<StorySummary[]>(r)),
   context: () => fetch("/api/context").then((r) => json<PatientContext>(r)),
   chat: (messages: ChatMessage[]) =>
     fetch("/api/chat", {
