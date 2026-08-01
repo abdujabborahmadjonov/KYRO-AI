@@ -81,6 +81,23 @@ npm run dev
 > `checkup.png` and `nurse.png` — the landing page picks them up automatically
 > (it shows an SVG fallback until then).
 
+## Deploy (Render, free tier)
+
+The repo ships a [render.yaml](render.yaml) blueprint — one long-running Node service that
+serves the built frontend, the API, and the voice WebSocket, and auto-seeds the demo chart
+on first boot.
+
+1. Sign in at [render.com](https://render.com) with GitHub and grant access to this repo.
+2. **New → Blueprint** → select `KYRO-AI` → **Apply**.
+3. In the service's **Environment** tab, paste `OPENAI_API_KEY` and `DEEPGRAM_API_KEY`
+   (both optional — the app mocks whatever is missing).
+
+Notes for the free tier: the instance sleeps after ~15 min idle (first request wakes it),
+and the disk is ephemeral — generated stories/illustrations reset on redeploys. Connect
+Medplum credentials for durable, chart-native storage.
+
+Local production run: `npm run build && npm start`.
+
 ## Demo Flow (3 minutes)
 
 1. Show the chart panel: *Maya, age 6, MRI scheduled Tuesday with Dr. Chen.*

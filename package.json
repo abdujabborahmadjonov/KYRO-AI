@@ -6,6 +6,7 @@
   "description": "KYRO AI — voice-powered, chart-aware storybooks (BraveTales) that prepare kids for their real procedures",
   "scripts": {
     "dev": "concurrently -n server,web -c blue,magenta \"tsx watch server/index.ts\" \"vite\"",
+    "start": "NODE_ENV=production tsx server/index.ts",
     "dev:server": "tsx watch server/index.ts",
     "dev:web": "vite",
     "seed": "tsx scripts/seed.ts",
@@ -24,6 +25,7 @@
     "express": "^4.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "tsx": "^4.23.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {
@@ -35,7 +37,6 @@
     "@types/ws": "^8.5.12",
     "@vitejs/plugin-react": "^4.3.1",
     "concurrently": "^9.0.0",
-    "tsx": "^4.19.0",
     "typescript": "^5.6.2",
     "vite": "^5.4.3"
   }

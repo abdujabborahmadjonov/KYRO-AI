@@ -2,7 +2,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { createServer } from "node:http";
+import { existsSync } from "node:fs";
 import path from "node:path";
+import { seedDemo } from "./seed-data.js";
 import { getPatientContext } from "./context.js";
 import { chat, type ChatMessage } from "./chat.js";
 import { generateStory } from "./story.js";
@@ -162,9 +164,32 @@ app.post("/api/narrate", async (req, res) => {
   }
 });
 
-const port = Number(process.env.API_PORT ?? 8787);
+// Production: serve the built frontend (vite build → dist/) with SPA fallback
+// for the three client routes. In dev, Vite serves the frontend and proxies here.
+const distDir = path.join(process.cwd(), "dist");
+if (existsSync(distDir)) {
+  app.use(express.static(distDir, { maxAge: "1h", index: false }));
+  app.get(["/", "/app", "/app/*", "/stories", "/stories/*"], (_req, res) => {
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
+
+// Hosting providers (Render, Railway, Fly) inject PORT; locally the API stays
+// on API_PORT so it never collides with the Vite dev server's PORT.
+const port = Number(
+  process.env.API_PORT ?? (process.env.NODE_ENV === "production" ? process.env.PORT : undefined) ?? 8787,
+);
 const httpServer = createServer(app);
 attachVoiceBridge(httpServer);
-httpServer.listen(port, () => {
-  console.log(`🧸 BraveTales server on http://localhost:${port}`);
+httpServer.listen(port, async () => {
+  console.log(`🧸 Kyro server on http://localhost:${port}`);
+  try {
+    const ctx = await getPatientContext();
+    if (!ctx) {
+      console.log("No patient found — seeding demo chart…");
+      console.log(`✅ Seeded: ${await seedDemo()}`);
+    }
+  } catch (err) {
+    console.warn("Auto-seed check failed:", err);
+  }
 });

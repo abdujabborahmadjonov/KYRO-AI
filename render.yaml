@@ -1,0 +1,21 @@
+# One-click Render deployment for Kyro.
+# In Render: New → Blueprint → select this repo → set the secret env vars.
+services:
+  - type: web
+    name: kyro
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build && npm run index-corpus
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: OPENAI_API_KEY # GPT-4o stories + gpt-image-1 illustrations
+        sync: false
+      - key: DEEPGRAM_API_KEY # voice agent + Read-to-me narration
+        sync: false
+      - key: ANTHROPIC_API_KEY # optional alternative story generator
+        sync: false
+      - key: MEDPLUM_CLIENT_ID # optional real EHR (mock FHIR store otherwise)
+        sync: false
+      - key: MEDPLUM_CLIENT_SECRET
+        sync: false
