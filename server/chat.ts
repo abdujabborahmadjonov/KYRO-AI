@@ -5,6 +5,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { PatientContext } from "./context.js";
 import { retrieve, type RetrievedChunk } from "./moss.js";
+import { hasOpenAI, openaiChatReply } from "./openai.js";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -33,18 +34,57 @@ function getAnthropic(): Anthropic | null {
   return anthropic;
 }
 
+/**
+ * Lightweight fear detection for text chat, so fears become structured chips
+ * even without the voice agent's function calling. Keyword heuristics; the
+ * voice path (and Claude, when keyed) provide richer extraction.
+ */
+const FEAR_PATTERNS: [RegExp, string][] = [
+  [/\b(loud|noise|noisy|sound|tunnel|machine|scanner)\b/i, "the loud machine"],
+  [/\b(needle|shot|poke|iv|blood)\b/i, "needles"],
+  [/\b(hurt|pain|ouch)\b/i, "that it might hurt"],
+  [/\b(alone|mom|mommy|dad|daddy|parents?|leave)\b/i, "being away from mom or dad"],
+  [/\b(dark)\b/i, "the dark"],
+  [/\b(mask)\b/i, "the mask"],
+  [/\b(sleep|asleep|wake)\b/i, "going to sleep for the procedure"],
+  [/\b(doctor|hospital|nurse)\b.*\b(scar(y|ed)|afraid|fear)\b|\b(scar(y|ed)|afraid|fear)\b.*\b(doctor|hospital|nurse)\b/i, "the hospital"],
+];
+
+export function extractFears(text: string): string[] {
+  const fearful = /\b(scared|scary|afraid|fear|worried|worry|nervous|don't like|dont like|hate)\b/i.test(text);
+  if (!fearful) return [];
+  const fears = new Set<string>();
+  for (const [pattern, label] of FEAR_PATTERNS) {
+    if (pattern.test(text)) fears.add(label);
+  }
+  return [...fears];
+}
+
 export async function chat(
   ctx: PatientContext | null,
   messages: ChatMessage[],
-): Promise<{ reply: string; sources: string[] }> {
+): Promise<{ reply: string; sources: string[]; fears: string[] }> {
   const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
   const facts = await retrieve(`${ctx?.procedure ?? ""} ${lastUser}`, 3);
+  const fears = extractFears(lastUser);
   const client = getAnthropic();
 
   if (!client) {
+    if (hasOpenAI()) {
+      try {
+        const reply = await openaiChatReply(
+          agentSystemPrompt(ctx, facts),
+          messages.map((m) => ({ role: m.role, content: m.content })),
+        );
+        if (reply.trim()) return { reply, sources: [...new Set(facts.map((f) => f.source))], fears };
+      } catch (err) {
+        console.warn("[chat] OpenAI reply failed, using canned fallback:", String(err).slice(0, 200));
+      }
+    }
     return {
       reply: demoReply(ctx, lastUser),
       sources: facts.map((f) => f.source),
+      fears,
     };
   }
 
@@ -55,7 +95,7 @@ export async function chat(
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
   });
   const reply = response.content.find((b) => b.type === "text")?.text ?? "";
-  return { reply, sources: [...new Set(facts.map((f) => f.source))] };
+  return { reply, sources: [...new Set(facts.map((f) => f.source))], fears };
 }
 
 /** Keyword-routed canned replies so the demo conversation works keyless. */

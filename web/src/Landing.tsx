@@ -3,6 +3,7 @@
  * (healthykids-landing.lovable.app), rebranded BraveTales → Kyro.
  * Dark plum + cream + amber, Lora serif display, Nunito Sans body.
  */
+import { useBackgroundMusic } from "./lib/music";
 
 const STEPS = [
   {
@@ -100,6 +101,7 @@ const ROADMAP = [
 ];
 
 export function Landing() {
+  const music = useBackgroundMusic();
   return (
     <div className="lp">
       <nav className="lp-nav">
@@ -112,9 +114,14 @@ export function Landing() {
           <a href="#stack">Stack</a>
           <a href="#demo">Demo</a>
         </div>
-        <a className="lp-btn lp-btn-purple" href="/app">
-          See the demo
-        </a>
+        <div className="lp-nav-actions">
+          <button className="lp-music" onClick={music.toggle} title="Background music">
+            {music.enabled ? "🎵" : "🔇"}
+          </button>
+          <a className="lp-btn lp-btn-purple" href="/app">
+            See the demo
+          </a>
+        </div>
       </nav>
 
       {/* Hero */}

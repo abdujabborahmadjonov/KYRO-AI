@@ -22,36 +22,39 @@ const MOCK_PATH = path.join(process.cwd(), "data", "mock-fhir.json");
 
 class MockFhirStore implements FhirStore {
   mode = "mock" as const;
-  private resources: Resource[] = [];
 
-  constructor() {
-    if (existsSync(MOCK_PATH)) {
-      try {
-        this.resources = JSON.parse(readFileSync(MOCK_PATH, "utf8"));
-      } catch {
-        this.resources = [];
-      }
+  /**
+   * Re-read the file on every operation: the seed script and the dev server
+   * are separate processes sharing this file, and a stale in-memory copy in
+   * one process would silently clobber the other's writes on persist.
+   */
+  private load(): Resource[] {
+    if (!existsSync(MOCK_PATH)) return [];
+    try {
+      return JSON.parse(readFileSync(MOCK_PATH, "utf8"));
+    } catch {
+      return [];
     }
   }
 
-  private persist() {
+  private persist(resources: Resource[]) {
     mkdirSync(path.dirname(MOCK_PATH), { recursive: true });
-    writeFileSync(MOCK_PATH, JSON.stringify(this.resources, null, 2));
+    writeFileSync(MOCK_PATH, JSON.stringify(resources, null, 2));
   }
 
   async createResource<T extends Resource>(resource: T): Promise<T> {
     const created = { ...resource, id: resource.id ?? randomUUID() };
     // Upsert by id so re-seeding doesn't duplicate
-    this.resources = this.resources.filter(
+    const resources = this.load().filter(
       (r) => !(r.resourceType === created.resourceType && r.id === created.id),
     );
-    this.resources.push(created);
-    this.persist();
+    resources.push(created);
+    this.persist(resources);
     return created;
   }
 
   async search<T extends Resource>(resourceType: ResourceType): Promise<T[]> {
-    return this.resources.filter((r) => r.resourceType === resourceType) as T[];
+    return this.load().filter((r) => r.resourceType === resourceType) as T[];
   }
 }
 

@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { createServer } from "node:http";
+import path from "node:path";
 import { getPatientContext } from "./context.js";
 import { chat, type ChatMessage } from "./chat.js";
 import { generateStory } from "./story.js";
@@ -12,6 +13,9 @@ import { attachVoiceBridge } from "./voice.js";
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
+
+// Generated storybook illustrations (written by server/story.ts)
+app.use("/illustrations", express.static(path.join(process.cwd(), "data", "illustrations"), { maxAge: "1y" }));
 
 // Request log: method, path, status, duration
 app.use((req, res, next) => {
@@ -92,6 +96,36 @@ app.get("/api/coverage", async (_req, res) => {
 app.get("/api/retrieve", async (req, res) => {
   const q = String(req.query.q ?? "");
   res.json(await retrieve(q, 4));
+});
+
+// Read a storybook page aloud (Deepgram Aura TTS → mp3)
+app.post("/api/narrate", async (req, res) => {
+  const key = process.env.DEEPGRAM_API_KEY;
+  if (!key) {
+    res.status(503).json({ error: "DEEPGRAM_API_KEY not set" });
+    return;
+  }
+  const text = String(req.body?.text ?? "").slice(0, 1200);
+  if (!text.trim()) {
+    res.status(400).json({ error: "text required" });
+    return;
+  }
+  try {
+    const dg = await fetch("https://api.deepgram.com/v1/speak?model=aura-2-thalia-en", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: `Token ${key}` },
+      body: JSON.stringify({ text }),
+    });
+    if (!dg.ok) {
+      res.status(502).json({ error: `Deepgram TTS failed (${dg.status}): ${await dg.text()}` });
+      return;
+    }
+    res.setHeader("content-type", dg.headers.get("content-type") ?? "audio/mpeg");
+    res.setHeader("cache-control", "no-store");
+    res.send(Buffer.from(await dg.arrayBuffer()));
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
 });
 
 const port = Number(process.env.API_PORT ?? 8787);

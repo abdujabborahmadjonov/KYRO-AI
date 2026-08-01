@@ -1,5 +1,5 @@
-import { useState } from "react";
-import type { StoryResult } from "../lib/api";
+import { useEffect, useRef, useState } from "react";
+import { api, type StoryPage, type StoryResult } from "../lib/api";
 
 const PALETTES = [
   ["#ff9a7b", "#ff5e7e"],
@@ -31,8 +31,76 @@ function Illustration({ emoji, prompt, index }: { emoji: string; prompt: string;
   );
 }
 
+/** Real illustration when one was generated, SVG placeholder otherwise. */
+function PageArt({ page, index }: { page: StoryPage; index: number }) {
+  const [failed, setFailed] = useState(false);
+  if (page.illustration_url && !failed) {
+    return (
+      <img
+        className="illustration"
+        src={page.illustration_url}
+        alt={page.illustration_prompt}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return <Illustration emoji={page.illustration_emoji} prompt={page.illustration_prompt} index={index} />;
+}
+
+/** "Read to me" — Deepgram Aura narration of the current page, cached per page. */
+function useNarration() {
+  const [state, setState] = useState<"idle" | "loading" | "playing" | "unavailable">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const cacheRef = useRef(new Map<string, string>()); // text → object URL
+
+  useEffect(
+    () => () => {
+      audioRef.current?.pause();
+      cacheRef.current.forEach((url) => URL.revokeObjectURL(url));
+    },
+    [],
+  );
+
+  const stop = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setState("idle");
+  };
+
+  const play = async (text: string) => {
+    if (state === "playing" || state === "loading") {
+      stop();
+      return;
+    }
+    setState("loading");
+    try {
+      let url = cacheRef.current.get(text);
+      if (!url) {
+        const blob = await api.narrate(text);
+        url = URL.createObjectURL(blob);
+        cacheRef.current.set(text, url);
+      }
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => setState("idle");
+      await audio.play();
+      setState("playing");
+    } catch {
+      setState("unavailable");
+    }
+  };
+
+  return { state, play, stop };
+}
+
 export function Storybook({ result, generating }: { result: StoryResult | null; generating: boolean }) {
   const [page, setPage] = useState(0);
+  const narration = useNarration();
+
+  const goTo = (p: number) => {
+    narration.stop();
+    setPage(p);
+  };
 
   if (generating) {
     return (
@@ -61,24 +129,36 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
 
   return (
     <div className="card storybook">
-      <h2>📖 {story.title}</h2>
+      <h2>
+        📖 {story.title}
+        <span className="book-actions">
+          <button
+            className="mini"
+            onClick={() => void narration.play(current.text)}
+            disabled={narration.state === "unavailable"}
+            title={narration.state === "unavailable" ? "Narration needs DEEPGRAM_API_KEY" : "Read this page aloud"}
+          >
+            {narration.state === "playing" ? "⏹ Stop" : narration.state === "loading" ? "…" : "🔊 Read to me"}
+          </button>
+          <button className="mini" onClick={() => window.print()} title="Print the whole book">
+            🖨️ Print
+          </button>
+        </span>
+      </h2>
       <p className="dedication">{story.dedication}</p>
 
       <div className="book-spread">
-        <Illustration emoji={current.illustration_emoji} prompt={current.illustration_prompt} index={page} />
+        <PageArt page={current} index={page} />
         <div className="book-right">
           <p className="page-text">{current.text}</p>
           <div className="pager">
-            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+            <button onClick={() => goTo(Math.max(0, page - 1))} disabled={page === 0}>
               ← Back
             </button>
             <span>
               Page {Math.min(page + 1, story.pages.length)} of {story.pages.length}
             </span>
-            <button
-              onClick={() => setPage((p) => Math.min(story.pages.length - 1, p + 1))}
-              disabled={page >= story.pages.length - 1}
-            >
+            <button onClick={() => goTo(Math.min(story.pages.length - 1, page + 1))} disabled={page >= story.pages.length - 1}>
               Next →
             </button>
           </div>
@@ -100,9 +180,28 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
           )}
           <li className="muted">
             Fears addressed: {story.fears_addressed.join(", ") || "—"} · Generated via{" "}
-            {result.generated === "claude" ? "Claude" : "demo fallback (set ANTHROPIC_API_KEY for live generation)"}
+            {result.generated === "openai"
+              ? "GPT-4o + gpt-image-1"
+              : result.generated === "claude"
+                ? "Claude"
+                : "demo fallback (set OPENAI_API_KEY or ANTHROPIC_API_KEY for live generation)"}
           </li>
         </ul>
+      </div>
+
+      {/* Print-only rendering of the complete book, one page per sheet */}
+      <div className="print-book" aria-hidden="true">
+        <div className="print-page print-cover">
+          <h1>{story.title}</h1>
+          <p>{story.dedication}</p>
+        </div>
+        {story.pages.map((p, i) => (
+          <div className="print-page" key={p.page_number}>
+            <PageArt page={p} index={i} />
+            <p>{p.text}</p>
+            <span className="print-num">{p.page_number}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

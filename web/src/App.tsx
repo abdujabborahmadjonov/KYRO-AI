@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type ChatMessage, type PatientContext, type StoryResult } from "./lib/api";
 import { ChartPanel } from "./components/ChartPanel";
 import { Mascot } from "./components/Mascot";
+import { useBackgroundMusic } from "./lib/music";
 import { ChatPanel } from "./components/ChatPanel";
 import { Storybook } from "./components/Storybook";
 import { CoverageCard } from "./components/CoverageCard";
@@ -14,6 +15,7 @@ export default function App() {
   const [storyResult, setStoryResult] = useState<StoryResult | null>(null);
   const [generating, setGenerating] = useState(false);
   const [storyError, setStoryError] = useState<string | null>(null);
+  const music = useBackgroundMusic();
 
   const conversationRef = useRef(conversation);
   conversationRef.current = conversation;
@@ -57,9 +59,14 @@ export default function App() {
           </h1>
           <span className="tagline">Brave stories for brave kids 🌟</span>
         </div>
-        {ctx && (
-          <span className={`pill ${ctx.fhirMode}`}>{ctx.fhirMode === "medplum" ? "Medplum EHR" : "demo chart"}</span>
-        )}
+        <div className="nav-right">
+          <button className="mini" onClick={music.toggle} title="Background music">
+            {music.enabled ? "🎵 music on" : "🔇 music off"}
+          </button>
+          {ctx && (
+            <span className={`pill ${ctx.fhirMode}`}>{ctx.fhirMode === "medplum" ? "Medplum EHR" : "demo chart"}</span>
+          )}
+        </div>
       </nav>
 
       {ctxError && (

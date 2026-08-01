@@ -1074,3 +1074,119 @@ button.mic.live {
 .lp-footer .lp-ctas {
   justify-content: center;
 }
+
+/* ---------- Storybook actions + print ---------- */
+.book-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+
+button.mini {
+  font-size: 0.78rem;
+  padding: 6px 14px;
+  background: #fff;
+  color: var(--pink);
+  border: 2px solid #ffd0dc;
+  box-shadow: none;
+}
+
+.print-book {
+  display: none;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  .app > *:not(.workspace),
+  .workspace .chat-col,
+  .banner,
+  .storybook > *:not(.print-book) {
+    display: none !important;
+  }
+
+  .workspace {
+    display: block !important;
+  }
+
+  .card.storybook {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .print-book {
+    display: block !important;
+  }
+
+  .print-page {
+    page-break-after: always;
+    text-align: center;
+    padding: 40px 30px;
+  }
+
+  .print-page .illustration {
+    max-width: 520px;
+    margin: 0 auto 30px;
+    box-shadow: none;
+  }
+
+  .print-page p {
+    font-size: 1.5rem;
+    line-height: 1.65;
+    font-weight: 700;
+    max-width: 560px;
+    margin: 0 auto;
+    color: #3d2749;
+  }
+
+  .print-cover {
+    padding-top: 200px;
+  }
+
+  .print-cover h1 {
+    font-family: "Baloo 2", "Nunito", sans-serif;
+    font-size: 3rem;
+    color: #ff5e7e;
+    margin: 0 0 16px;
+  }
+
+  .print-cover p {
+    font-style: italic;
+    color: #a394a8;
+  }
+
+  .print-num {
+    display: block;
+    margin-top: 26px;
+    color: #a394a8;
+    font-weight: 800;
+  }
+}
+
+/* ---------- Nav extras (music toggle) ---------- */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lp-music {
+  background: transparent;
+  border: 2px solid rgba(61, 39, 73, 0.18);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: none;
+  color: inherit;
+}

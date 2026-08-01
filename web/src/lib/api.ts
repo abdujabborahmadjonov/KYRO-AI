@@ -20,6 +20,7 @@ export interface StoryPage {
   text: string;
   illustration_prompt: string;
   illustration_emoji: string;
+  illustration_url?: string;
 }
 
 export interface Story {
@@ -34,7 +35,7 @@ export interface StoryResult {
   story: Story;
   documentReferenceId?: string;
   communicationId?: string;
-  generated: "claude" | "demo-fallback";
+  generated: "openai" | "claude" | "demo-fallback";
 }
 
 export interface CoverageSummary {
@@ -61,7 +62,19 @@ export const api = {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ messages }),
-    }).then((r) => json<{ reply: string; sources: string[] }>(r)),
+    }).then((r) => json<{ reply: string; sources: string[]; fears: string[] }>(r)),
+  narrate: async (text: string): Promise<Blob> => {
+    const r = await fetch("/api/narrate", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      throw new Error((body as { error?: string }).error ?? `HTTP ${r.status}`);
+    }
+    return r.blob();
+  },
   story: (conversation: ChatMessage[], fears: string[] = []) =>
     fetch("/api/story", {
       method: "POST",

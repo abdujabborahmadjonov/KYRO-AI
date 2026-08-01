@@ -8,6 +8,8 @@ import type {
   Appointment,
   CareTeam,
   Condition,
+  Coverage,
+  Encounter,
   Patient,
   Practitioner,
   ServiceRequest,
@@ -85,7 +87,7 @@ async function main() {
     },
   });
 
-  await store.createResource<Appointment>({
+  const appointment = await store.createResource<Appointment>({
     resourceType: "Appointment",
     id: "demo-appointment",
     status: "booked",
@@ -98,7 +100,27 @@ async function main() {
     ],
   });
 
-  console.log(`✅ Seeded: Maya Rivera (6), abdominal MRI on ${when.toDateString()} with Dr. Chen.`);
+  // The planned visit — storybook + communication get linked to this
+  await store.createResource<Encounter>({
+    resourceType: "Encounter",
+    id: "demo-encounter",
+    status: "planned",
+    class: { system: "http://terminology.hl7.org/CodeSystem/v3-ActCode", code: "AMB", display: "ambulatory" },
+    subject: { reference: `Patient/${patient.id}` },
+    appointment: [{ reference: `Appointment/${appointment.id}` }],
+    serviceType: { text: "Pediatric MRI" },
+  });
+
+  await store.createResource<Coverage>({
+    resourceType: "Coverage",
+    id: "demo-coverage",
+    status: "active",
+    beneficiary: { reference: `Patient/${patient.id}` },
+    payor: [{ display: "Acme Family Health PPO (demo)" }],
+    class: [{ type: { text: "plan" }, value: "PPO-FAM-2026", name: "Acme Family Health PPO" }],
+  });
+
+  console.log(`✅ Seeded: Maya Rivera (6), abdominal MRI on ${when.toDateString()} with Dr. Chen (+ Encounter, Coverage).`);
 }
 
 main().catch((err) => {

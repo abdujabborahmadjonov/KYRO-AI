@@ -48,8 +48,9 @@ export function ChatPanel({ ctx, conversation, setConversation, fears, onFear, o
     setInput("");
     setBusy(true);
     try {
-      const { reply } = await api.chat(next);
+      const { reply, fears: detected } = await api.chat(next);
       setConversation([...next, { role: "assistant", content: reply }]);
+      detected.forEach(onFear);
     } catch (e) {
       setConversation([...next, { role: "assistant", content: `(error: ${(e as Error).message})` }]);
     } finally {
