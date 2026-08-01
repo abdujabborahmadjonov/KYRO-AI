@@ -6,12 +6,25 @@ interface Props {
   ctx: PatientContext | null;
   conversation: ChatMessage[];
   setConversation: (msgs: ChatMessage[]) => void;
+  fears: string[];
+  onFear: (fear: string) => void;
+  onStoryRequested: () => void;
 }
 
-export function ChatPanel({ ctx, conversation, setConversation }: Props) {
+type VoiceState = "off" | "connecting" | "live" | "unavailable";
+type AgentState = "listening" | "thinking" | "speaking";
+
+const AGENT_STATE_LABEL: Record<AgentState, string> = {
+  listening: "👂 listening",
+  thinking: "💭 thinking",
+  speaking: "🗣️ speaking",
+};
+
+export function ChatPanel({ ctx, conversation, setConversation, fears, onFear, onStoryRequested }: Props) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
-  const [voiceState, setVoiceState] = useState<"off" | "connecting" | "live" | "unavailable">("off");
+  const [voiceState, setVoiceState] = useState<VoiceState>("off");
+  const [agentState, setAgentState] = useState<AgentState>("listening");
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
   const voiceRef = useRef<VoiceSession | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -51,6 +64,7 @@ export function ChatPanel({ ctx, conversation, setConversation }: Props) {
       return;
     }
     setVoiceState("connecting");
+    setVoiceNote(null);
     const session = new VoiceSession({
       onReady: () => setVoiceState("live"),
       onUnavailable: (reason) => {
@@ -58,8 +72,12 @@ export function ChatPanel({ ctx, conversation, setConversation }: Props) {
         setVoiceNote(reason);
       },
       onTranscript: (role, text) => {
+        if (!text.trim()) return;
         setConversation([...conversationRef.current, { role, content: text }]);
       },
+      onFear,
+      onStoryRequested,
+      onAgentState: setAgentState,
       onClose: () => setVoiceState((s) => (s === "live" || s === "connecting" ? "off" : s)),
     });
     voiceRef.current = session;
@@ -69,7 +87,8 @@ export function ChatPanel({ ctx, conversation, setConversation }: Props) {
   return (
     <div className="card chat">
       <h2>
-        🎙️ Talk with BraveTales{" "}
+        🎙️ Talk with KYRO{" "}
+        {voiceState === "live" && <span className="pill medplum">{AGENT_STATE_LABEL[agentState]}</span>}
         <button
           className={`mic ${voiceState}`}
           onClick={toggleVoice}
@@ -78,7 +97,16 @@ export function ChatPanel({ ctx, conversation, setConversation }: Props) {
           {voiceState === "live" ? "⏹ stop voice" : voiceState === "connecting" ? "…" : "🎤 voice"}
         </button>
       </h2>
-      {voiceState === "unavailable" && <div className="banner">{voiceNote} </div>}
+      {voiceState === "unavailable" && <div className="banner">{voiceNote}</div>}
+      {fears.length > 0 && (
+        <div className="fears">
+          {fears.map((f) => (
+            <span key={f} className="fear-chip" title="Fear captured from the conversation">
+              😟 {f}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="messages" ref={scrollRef}>
         <div className="msg assistant">{greet}</div>
         {conversation.map((m, i) => (

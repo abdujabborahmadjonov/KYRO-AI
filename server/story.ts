@@ -66,54 +66,85 @@ function getAnthropic(): Anthropic | null {
   return anthropic;
 }
 
+/** A story is usable if it has a title and at least one well-formed page. */
+function isUsableStory(story: unknown): story is Story {
+  const s = story as Story;
+  return (
+    Boolean(s) &&
+    typeof s.title === "string" &&
+    Array.isArray(s.pages) &&
+    s.pages.length > 0 &&
+    s.pages.every((p) => typeof p.text === "string" && typeof p.illustration_emoji === "string")
+  );
+}
+
 export async function generateStory(
   ctx: PatientContext,
   conversation: { role: string; content: string }[],
+  fears: string[] = [],
 ): Promise<StoryResult> {
   const client = getAnthropic();
   const transcript = conversation.map((m) => `${m.role === "user" ? "Child/Parent" : "Agent"}: ${m.content}`).join("\n");
 
   // Ground the story in real ped-ed content about this procedure + expressed fears
-  const grounding = await retrieve(`${ctx.procedure} ${transcript.slice(-500)}`, 5);
+  const grounding = await retrieve(`${ctx.procedure} ${fears.join(" ")} ${transcript.slice(-500)}`, 5);
   const facts = grounding.map((g) => `[${g.source}] ${g.text}`).join("\n\n");
 
-  let story: Story;
+  let story: Story | null = null;
   let generated: StoryResult["generated"] = "claude";
 
   if (client) {
-    const careTeamList = ctx.careTeam.map((m) => `${m.name} (${m.role})`).join(", ") || "the care team";
-    const stream = client.messages.stream({
-      model: "claude-opus-5",
-      max_tokens: 16000,
-      system:
-        `You write personalized, clinically-grounded illustrated storybooks that prepare children for medical procedures. ` +
-        `The child is the hero of their own real, upcoming procedure. Address their specific fears head-on with honesty and warmth. ` +
-        `Every clinical claim must be consistent with the provided patient-education facts — what comforts the child must also be true. ` +
-        `Write at the reading level of a child of the given age. 8-10 short pages. Their real care team appears as characters by name. ` +
-        `Never promise "it won't hurt" if it might — reframe honestly (e.g. "a quick pinch, then it's done").`,
-      output_config: {
-        format: { type: "json_schema", schema: STORY_SCHEMA },
-      },
-      messages: [
-        {
-          role: "user",
-          content:
-            `PATIENT CHART (FHIR):\n` +
-            `- Name: ${ctx.name} (call them ${ctx.firstName})\n` +
-            `- Age: ${ctx.ageYears ?? "unknown"}\n` +
-            `- Procedure: ${ctx.procedure}${ctx.procedureDate ? ` on ${ctx.procedureDate}` : ""}\n` +
-            `- Condition: ${ctx.condition ?? "n/a"}\n` +
-            `- Care team: ${careTeamList}\n\n` +
-            `CONVERSATION WITH THE CHILD (their fears, in their own words):\n${transcript || "(no conversation yet — write a generally reassuring story for this procedure)"}\n\n` +
-            `CLINICALLY ACCURATE PATIENT-EDUCATION FACTS (ground every claim in these):\n${facts}\n\n` +
-            `Write the storybook now.`,
+    try {
+      const careTeamList = ctx.careTeam.map((m) => `${m.name} (${m.role})`).join(", ") || "the care team";
+      const stream = client.messages.stream({
+        model: "claude-opus-5",
+        max_tokens: 16000,
+        system:
+          `You write personalized, clinically-grounded illustrated storybooks that prepare children for medical procedures. ` +
+          `The child is the hero of their own real, upcoming procedure. Address their specific fears head-on with honesty and warmth. ` +
+          `Every clinical claim must be consistent with the provided patient-education facts — what comforts the child must also be true. ` +
+          `Write at the reading level of a child of the given age. 8-10 short pages. Their real care team appears as characters by name. ` +
+          `Never promise "it won't hurt" if it might — reframe honestly (e.g. "a quick pinch, then it's done").`,
+        output_config: {
+          format: { type: "json_schema", schema: STORY_SCHEMA },
         },
-      ],
-    });
-    const message = await stream.finalMessage();
-    const text = message.content.find((b) => b.type === "text")?.text ?? "{}";
-    story = JSON.parse(text) as Story;
-  } else {
+        messages: [
+          {
+            role: "user",
+            content:
+              `PATIENT CHART (FHIR):\n` +
+              `- Name: ${ctx.name} (call them ${ctx.firstName})\n` +
+              `- Age: ${ctx.ageYears ?? "unknown"}\n` +
+              `- Procedure: ${ctx.procedure}${ctx.procedureDate ? ` on ${ctx.procedureDate}` : ""}\n` +
+              `- Condition: ${ctx.condition ?? "n/a"}\n` +
+              `- Care team: ${careTeamList}\n\n` +
+              `FEARS CAPTURED DURING THE CONVERSATION (address each one in the story):\n${fears.length ? fears.map((f) => `- ${f}`).join("\n") : "(none captured explicitly — infer from the transcript)"}\n\n` +
+              `CONVERSATION WITH THE CHILD (their fears, in their own words):\n${transcript || "(no conversation yet — write a generally reassuring story for this procedure)"}\n\n` +
+              `CLINICALLY ACCURATE PATIENT-EDUCATION FACTS (ground every claim in these):\n${facts}\n\n` +
+              `Write the storybook now.`,
+          },
+        ],
+      });
+      const message = await stream.finalMessage();
+      if (message.stop_reason === "refusal") {
+        console.warn("[story] model refused; falling back to demo story");
+      } else {
+        const text = message.content.find((b) => b.type === "text")?.text ?? "{}";
+        const parsed = JSON.parse(text);
+        if (isUsableStory(parsed)) {
+          // Keep pages ordered and bounded regardless of what the model returned
+          parsed.pages = parsed.pages.sort((a, b) => a.page_number - b.page_number).slice(0, 12);
+          story = parsed;
+        } else {
+          console.warn("[story] model output failed validation; falling back to demo story");
+        }
+      }
+    } catch (err) {
+      console.error("[story] generation failed; falling back to demo story:", err);
+    }
+  }
+
+  if (!story) {
     story = demoStory(ctx);
     generated = "demo-fallback";
   }

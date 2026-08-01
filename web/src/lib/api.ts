@@ -62,11 +62,11 @@ export const api = {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ messages }),
     }).then((r) => json<{ reply: string; sources: string[] }>(r)),
-  story: (conversation: ChatMessage[]) =>
+  story: (conversation: ChatMessage[], fears: string[] = []) =>
     fetch("/api/story", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ conversation }),
+      body: JSON.stringify({ conversation, fears }),
     }).then((r) => json<StoryResult>(r)),
   coverage: () => fetch("/api/coverage").then((r) => json<CoverageSummary>(r)),
 };

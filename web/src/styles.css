@@ -132,6 +132,22 @@ body {
 }
 
 /* Chat */
+.fears {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.fear-chip {
+  background: rgba(240, 98, 146, 0.15);
+  border: 1px solid rgba(240, 98, 146, 0.4);
+  color: #f8bbd0;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+}
+
 .chat .messages {
   height: 320px;
   overflow-y: auto;

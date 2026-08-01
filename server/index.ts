@@ -13,6 +13,15 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "2mb" }));
 
+// Request log: method, path, status, duration
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on("finish", () => {
+    console.log(`${req.method} ${req.path} → ${res.statusCode} (${Date.now() - start}ms)`);
+  });
+  next();
+});
+
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
@@ -61,7 +70,8 @@ app.post("/api/story", async (req, res) => {
       return;
     }
     const conversation = (req.body?.conversation ?? []) as { role: string; content: string }[];
-    const result = await generateStory(ctx, conversation);
+    const fears = ((req.body?.fears ?? []) as unknown[]).filter((f): f is string => typeof f === "string").slice(0, 10);
+    const result = await generateStory(ctx, conversation, fears);
     res.json(result);
   } catch (err) {
     res.status(500).json({ error: String(err) });
