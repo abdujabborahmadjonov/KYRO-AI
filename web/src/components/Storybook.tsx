@@ -47,11 +47,12 @@ function PageArt({ page, index }: { page: StoryPage; index: number }) {
   return <Illustration emoji={page.illustration_emoji} prompt={page.illustration_prompt} index={index} />;
 }
 
-/** "Read to me" — Deepgram Aura narration of the current page, cached per page. */
+/** Deepgram Aura narration, cached per page, with completion callback for auto-read. */
 function useNarration() {
   const [state, setState] = useState<"idle" | "loading" | "playing" | "unavailable">("idle");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const cacheRef = useRef(new Map<string, string>()); // text → object URL
+  const cancelledRef = useRef(false);
 
   useEffect(
     () => () => {
@@ -62,16 +63,15 @@ function useNarration() {
   );
 
   const stop = () => {
+    cancelledRef.current = true;
     audioRef.current?.pause();
     audioRef.current = null;
     setState("idle");
   };
 
-  const play = async (text: string) => {
-    if (state === "playing" || state === "loading") {
-      stop();
-      return;
-    }
+  /** Play one text; resolves onEnded (not called if stopped mid-way). */
+  const play = async (text: string, onEnded?: () => void) => {
+    cancelledRef.current = false;
     setState("loading");
     try {
       let url = cacheRef.current.get(text);
@@ -80,9 +80,14 @@ function useNarration() {
         url = URL.createObjectURL(blob);
         cacheRef.current.set(text, url);
       }
+      if (cancelledRef.current) return;
       const audio = new Audio(url);
       audioRef.current = audio;
-      audio.onended = () => setState("idle");
+      audio.onended = () => {
+        if (cancelledRef.current) return;
+        setState("idle");
+        onEnded?.();
+      };
       await audio.play();
       setState("playing");
     } catch {
@@ -93,12 +98,73 @@ function useNarration() {
   return { state, play, stop };
 }
 
+const ILLUSTRATION_POLL_MS = 12_000;
+const ILLUSTRATION_POLL_MAX = 30; // ~6 minutes
+
 export function Storybook({ result, generating }: { result: StoryResult | null; generating: boolean }) {
   const [page, setPage] = useState(0);
+  const [story, setStory] = useState(result?.story ?? null);
+  const [autoReading, setAutoReading] = useState(false);
   const narration = useNarration();
+  const storyRef = useRef(story);
+  storyRef.current = story;
+
+  // Fresh result → reset the reader
+  useEffect(() => {
+    setStory(result?.story ?? null);
+    setPage(0);
+    setAutoReading(false);
+    narration.stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
+
+  // Background illustration passes keep painting after generation — poll the
+  // filed document until every page has real art (or we give up quietly).
+  useEffect(() => {
+    const id = result?.documentReferenceId;
+    if (!id || !result?.story || result.story.pages.every((p) => p.illustration_url)) return;
+    let polls = 0;
+    const timer = window.setInterval(async () => {
+      polls += 1;
+      try {
+        const fresh = await api.storyById(id);
+        if (fresh.story.pages.some((p, i) => p.illustration_url && !storyRef.current?.pages[i]?.illustration_url)) {
+          setStory(fresh.story);
+        }
+        if (fresh.story.pages.every((p) => p.illustration_url) || polls >= ILLUSTRATION_POLL_MAX) {
+          window.clearInterval(timer);
+        }
+      } catch {
+        if (polls >= ILLUSTRATION_POLL_MAX) window.clearInterval(timer);
+      }
+    }, ILLUSTRATION_POLL_MS);
+    return () => window.clearInterval(timer);
+  }, [result]);
+
+  /** Auto-read from a page to the end of the book, turning pages as it goes. */
+  const readFrom = (idx: number) => {
+    const pages = storyRef.current?.pages;
+    if (!pages || idx >= pages.length) {
+      setAutoReading(false);
+      return;
+    }
+    setPage(idx);
+    void narration.play(pages[idx].text, () => readFrom(idx + 1));
+  };
+
+  const toggleReadAloud = () => {
+    if (autoReading || narration.state === "playing" || narration.state === "loading") {
+      narration.stop();
+      setAutoReading(false);
+      return;
+    }
+    setAutoReading(true);
+    readFrom(page);
+  };
 
   const goTo = (p: number) => {
     narration.stop();
+    setAutoReading(false);
     setPage(p);
   };
 
@@ -106,12 +172,12 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
     return (
       <div className="card storybook empty">
         <h2>📖 The Storybook</h2>
-        <p className="muted">Weaving the chart, the child's fears, and real clinical facts into a story…</p>
+        <p className="muted">Weaving the chart, the child's fears, and real clinical facts into a story — and painting every page…</p>
       </div>
     );
   }
 
-  if (!result) {
+  if (!result || !story) {
     return (
       <div className="card storybook empty">
         <h2>📖 The Storybook</h2>
@@ -124,8 +190,9 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
     );
   }
 
-  const { story } = result;
   const current = story.pages[Math.min(page, story.pages.length - 1)];
+  const painted = story.pages.filter((p) => p.illustration_url).length;
+  const stillPainting = painted > 0 && painted < story.pages.length;
 
   return (
     <div className="card storybook">
@@ -134,17 +201,29 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
         <span className="book-actions">
           <button
             className="mini"
-            onClick={() => void narration.play(current.text)}
+            onClick={toggleReadAloud}
             disabled={narration.state === "unavailable"}
-            title={narration.state === "unavailable" ? "Narration needs DEEPGRAM_API_KEY" : "Read this page aloud"}
+            title={
+              narration.state === "unavailable"
+                ? "Narration needs DEEPGRAM_API_KEY"
+                : "Read aloud from this page to the end"
+            }
           >
-            {narration.state === "playing" ? "⏹ Stop" : narration.state === "loading" ? "…" : "🔊 Read to me"}
+            {autoReading || narration.state === "playing" || narration.state === "loading"
+              ? "⏹ Stop reading"
+              : "🔊 Read to me"}
           </button>
           <button className="mini" onClick={() => window.print()} title="Print the whole book">
             🖨️ Print
           </button>
         </span>
       </h2>
+      {stillPainting && (
+        <div className="banner">
+          🎨 Still painting… {painted} of {story.pages.length} pages have their pictures — the rest appear
+          automatically.
+        </div>
+      )}
       <p className="dedication">{story.dedication}</p>
 
       <div className="book-spread">

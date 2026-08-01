@@ -69,6 +69,8 @@ export interface StorySummary {
 
 export const api = {
   stories: () => fetch("/api/stories").then((r) => json<StorySummary[]>(r)),
+  storyById: (id: string) =>
+    fetch(`/api/story/${id}`).then((r) => json<{ story: Story; documentReferenceId: string }>(r)),
   context: () => fetch("/api/context").then((r) => json<PatientContext>(r)),
   chat: (messages: ChatMessage[]) =>
     fetch("/api/chat", {

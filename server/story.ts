@@ -115,22 +115,30 @@ function buildUserPrompt(
 }
 
 const ILLUSTRATIONS_DIR = path.join(process.cwd(), "data", "illustrations");
-const MAX_ILLUSTRATED_PAGES = 8;
-const IMAGE_CONCURRENCY = 3;
+// Two at a time keeps a full book under OpenAI's images-per-minute limits most
+// of the time; pages that still fail are re-tried by the background passes.
+const IMAGE_CONCURRENCY = 2;
+const BACKGROUND_PASSES = 4;
+const BACKGROUND_PASS_DELAY_MS = 60_000;
 
-/** Generate real illustrations for the first pages; best-effort per page. */
-async function illustrate(story: Story, ctx: PatientContext): Promise<void> {
-  const bookId = randomUUID().slice(0, 8);
-  const dir = path.join(ILLUSTRATIONS_DIR, bookId);
-  mkdirSync(dir, { recursive: true });
-
-  const style =
+function illustrationStyle(ctx: PatientContext): string {
+  return (
     `Children's storybook illustration, warm watercolor style, soft pastel colors, gentle and reassuring mood, no text or letters. ` +
-    `The hero is a ${ctx.ageYears ?? 6}-year-old child named ${ctx.firstName}.`;
+    `The hero is a ${ctx.ageYears ?? 6}-year-old child named ${ctx.firstName}.`
+  );
+}
 
-  const pages = story.pages.slice(0, MAX_ILLUSTRATED_PAGES);
-  const queue = [...pages.entries()];
+/**
+ * Generate illustrations for every page that doesn't have one yet.
+ * Returns the book's illustration directory id (stable across passes).
+ */
+async function illustrateMissing(story: Story, ctx: PatientContext, bookId?: string): Promise<string> {
+  const id = bookId ?? randomUUID().slice(0, 8);
+  const dir = path.join(ILLUSTRATIONS_DIR, id);
+  mkdirSync(dir, { recursive: true });
+  const style = illustrationStyle(ctx);
 
+  const queue = [...story.pages.entries()].filter(([, p]) => !p.illustration_url);
   const worker = async () => {
     while (queue.length) {
       const [i, page] = queue.shift()!;
@@ -138,11 +146,52 @@ async function illustrate(story: Story, ctx: PatientContext): Promise<void> {
       if (png) {
         const file = `page-${page.page_number}.png`;
         writeFileSync(path.join(dir, file), png);
-        story.pages[i].illustration_url = `/illustrations/${bookId}/${file}`;
+        story.pages[i].illustration_url = `/illustrations/${id}/${file}`;
       }
     }
   };
   await Promise.all(Array.from({ length: IMAGE_CONCURRENCY }, worker));
+  return id;
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Keep painting missing pages after the response has been sent (rate limits
+ * reset per minute), updating the filed DocumentReference as pages complete
+ * so the library and any polling reader pick them up.
+ */
+async function completeIllustrationsInBackground(
+  story: Story,
+  ctx: PatientContext,
+  docRef: DocumentReference,
+  bookId: string,
+): Promise<void> {
+  const store = getFhirStore();
+  for (let pass = 1; pass <= BACKGROUND_PASSES; pass++) {
+    if (story.pages.every((p) => p.illustration_url)) break;
+    await sleep(BACKGROUND_PASS_DELAY_MS);
+    const before = story.pages.filter((p) => p.illustration_url).length;
+    await illustrateMissing(story, ctx, bookId);
+    const after = story.pages.filter((p) => p.illustration_url).length;
+    if (after > before) {
+      docRef.content = [
+        {
+          attachment: {
+            contentType: "application/json",
+            data: Buffer.from(JSON.stringify(story)).toString("base64"),
+            title: story.title,
+          },
+        },
+      ];
+      try {
+        await store.updateResource(docRef);
+        console.log(`[story] background pass ${pass}: ${after}/${story.pages.length} pages illustrated`);
+      } catch (err) {
+        console.warn("[story] failed to update filed story:", String(err).slice(0, 200));
+      }
+    }
+  }
 }
 
 export async function generateStory(
@@ -208,17 +257,25 @@ export async function generateStory(
     generated = "demo-fallback";
   }
 
-  // Real illustrations whenever OpenAI images are available (best-effort)
+  // Real illustrations for every page whenever OpenAI images are available.
+  let bookId: string | null = null;
   if (hasOpenAI()) {
     try {
-      await illustrate(story, ctx);
+      bookId = await illustrateMissing(story, ctx);
     } catch (err) {
       console.warn("[story] illustration pass failed:", String(err).slice(0, 200));
     }
   }
 
   // File it back — this is the part no storybook app does.
-  const { documentReferenceId, communicationId } = await fileToChart(ctx, story, transcript);
+  const { documentReferenceId, communicationId, docRef } = await fileToChart(ctx, story, transcript);
+
+  // Any pages the first pass couldn't paint (rate limits) get finished in the
+  // background; the filed document is updated as they complete.
+  if (hasOpenAI() && bookId && !story.pages.every((p) => p.illustration_url)) {
+    void completeIllustrationsInBackground(story, ctx, docRef, bookId);
+  }
+
   return { story, documentReferenceId, communicationId, generated };
 }
 
@@ -268,7 +325,7 @@ async function fileToChart(ctx: PatientContext, story: Story, transcript: string
     ],
   });
 
-  return { documentReferenceId: docRef.id, communicationId: communication.id };
+  return { documentReferenceId: docRef.id, communicationId: communication.id, docRef };
 }
 
 /** Canned demo story so the flow works with zero API keys. */

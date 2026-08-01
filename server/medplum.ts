@@ -15,6 +15,7 @@ import path from "node:path";
 export interface FhirStore {
   mode: "medplum" | "mock";
   createResource<T extends Resource>(resource: T): Promise<T>;
+  updateResource<T extends Resource>(resource: T): Promise<T>;
   search<T extends Resource>(resourceType: ResourceType, query?: Record<string, string>): Promise<T[]>;
 }
 
@@ -53,6 +54,11 @@ class MockFhirStore implements FhirStore {
     return created;
   }
 
+  async updateResource<T extends Resource>(resource: T): Promise<T> {
+    // Same upsert-by-id semantics as create in the mock store
+    return this.createResource(resource);
+  }
+
   async search<T extends Resource>(resourceType: ResourceType): Promise<T[]> {
     return this.load().filter((r) => r.resourceType === resourceType) as T[];
   }
@@ -77,6 +83,11 @@ class MedplumFhirStore implements FhirStore {
   async createResource<T extends Resource>(resource: T): Promise<T> {
     await this.ensureLogin();
     return this.client.createResource(resource);
+  }
+
+  async updateResource<T extends Resource>(resource: T): Promise<T> {
+    await this.ensureLogin();
+    return this.client.updateResource(resource);
   }
 
   async search<T extends Resource>(resourceType: ResourceType, query?: Record<string, string>): Promise<T[]> {

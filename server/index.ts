@@ -118,6 +118,24 @@ app.get("/api/stories", async (_req, res) => {
   }
 });
 
+// One story by DocumentReference id — used by the reader to pick up
+// illustrations that finish in the background after generation.
+app.get("/api/story/:id", async (req, res) => {
+  try {
+    const { getFhirStore } = await import("./medplum.js");
+    const docs = await getFhirStore().search("DocumentReference");
+    const doc: any = docs.find((d: any) => d.id === req.params.id);
+    if (!doc) {
+      res.status(404).json({ error: "not found" });
+      return;
+    }
+    const story = JSON.parse(Buffer.from(doc.content?.[0]?.attachment?.data ?? "", "base64").toString("utf8"));
+    res.json({ story, documentReferenceId: doc.id });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 // Parent-facing coverage summary (Stedi test mode or mock)
 app.get("/api/coverage", async (_req, res) => {
   try {
@@ -180,6 +198,8 @@ const port = Number(
   process.env.API_PORT ?? (process.env.NODE_ENV === "production" ? process.env.PORT : undefined) ?? 8787,
 );
 const httpServer = createServer(app);
+// Fully-illustrated story generation can be slow — don't kill long requests.
+httpServer.requestTimeout = 0;
 attachVoiceBridge(httpServer);
 httpServer.listen(port, async () => {
   console.log(`🧸 Kyro server on http://localhost:${port}`);
