@@ -519,32 +519,22 @@ button.mic.live {
   font-weight: 600;
 }
 
-/* ================= Landing page (ported Lovable design) ================= */
+/* ================= Landing page (Kyro pink — matches the app) ================= */
 .lp {
-  --lp-cream: #faf3e7;
-  --lp-cream-soft: #fdf8ef;
-  --lp-ink: #3d2749;
-  --lp-ink-soft: #6b5673;
-  --lp-plum-1: #55305f;
-  --lp-plum-2: #2a1733;
-  --lp-peach: #f6e2ce;
-  --lp-amber: #ed9c57;
-  --lp-purple: #5b2d83;
-  --lp-cream-text: #f7efdf;
-  font-family: "Nunito Sans", "Nunito", system-ui, sans-serif;
+  --lp-grad: linear-gradient(135deg, #ff9a7b 0%, #ff5e7e 100%);
+  --lp-ink: #4a3b52;
+  --lp-muted: #a394a8;
+  --lp-border: #ffe6dc;
+  --lp-shadow: 0 12px 32px rgba(255, 94, 126, 0.14);
+  font-family: "Nunito", system-ui, sans-serif;
   color: var(--lp-ink);
-  background: var(--lp-cream);
-  margin: -0px;
+  padding-bottom: 28px;
 }
 
 .lp h1,
 .lp h2,
-.lp h3,
-.lp-brand span,
-.lp-stats strong,
-.lp-demo-num,
-.lp-stack-value {
-  font-family: "Lora", Georgia, serif;
+.lp h3 {
+  font-family: "Baloo 2", "Nunito", sans-serif;
 }
 
 .lp-container {
@@ -553,52 +543,79 @@ button.mic.live {
   padding: 0 32px;
 }
 
-/* Nav */
+/* Nav — same white pill bar as the app */
 .lp-nav {
   position: sticky;
-  top: 0;
+  top: 12px;
   z-index: 20;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  padding: 14px 40px;
-  background: rgba(250, 243, 231, 0.88);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(61, 39, 73, 0.08);
+  max-width: 1180px;
+  margin: 14px auto 0;
+  padding: 10px 22px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--lp-border);
+  border-radius: 20px;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   text-decoration: none;
-  color: var(--lp-purple);
-  font-size: 1.25rem;
+  font-size: 1.35rem;
 }
 
 .lp-brand span {
-  font-weight: 700;
-  margin-left: 4px;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-weight: 800;
+  background: var(--lp-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .lp-nav-links {
   display: flex;
-  gap: 26px;
+  gap: 24px;
 }
 
 .lp-nav-links a {
-  color: var(--lp-ink-soft);
+  color: var(--lp-muted);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.92rem;
 }
 
 .lp-nav-links a:hover {
-  color: var(--lp-purple);
+  color: #ff5e7e;
 }
 
 @media (max-width: 760px) {
   .lp-nav-links {
     display: none;
   }
+}
+
+.lp-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lp-music {
+  background: #fff;
+  border: 2px solid #ffd0dc;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: none;
+  color: #ff5e7e;
 }
 
 /* Buttons */
@@ -609,47 +626,52 @@ button.mic.live {
   padding: 12px 26px;
   font-weight: 800;
   font-size: 0.95rem;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease;
 }
 
 .lp-btn:hover {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
 }
 
 .lp-btn-purple {
-  background: var(--lp-purple);
+  background: var(--lp-grad);
   color: #fff;
+  box-shadow: 0 6px 14px rgba(255, 94, 126, 0.3);
 }
 
 .lp-btn-amber {
-  background: var(--lp-amber);
-  color: #2c1836;
+  background: #fff;
+  color: #ff5e7e;
 }
 
 .lp-btn-outline {
-  border: 2px solid rgba(247, 239, 223, 0.5);
-  color: var(--lp-cream-text);
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  color: #fff;
 }
 
 .lp-cream .lp-btn-outline {
-  border-color: rgba(61, 39, 73, 0.3);
-  color: var(--lp-ink);
+  border-color: #ffd0dc;
+  color: #ff5e7e;
 }
 
-/* Hero */
+/* Hero — big rounded gradient card, like the app's CTA style */
 .lp-hero {
   background:
-    radial-gradient(700px 500px at 12% 110%, rgba(237, 156, 87, 0.28) 0%, transparent 60%),
-    radial-gradient(600px 400px at 95% -10%, rgba(237, 156, 87, 0.12) 0%, transparent 60%),
-    linear-gradient(150deg, var(--lp-plum-1) 0%, var(--lp-plum-2) 78%);
-  color: var(--lp-cream-text);
-  padding: 88px 0 96px;
+    radial-gradient(600px 400px at 12% 110%, rgba(255, 213, 79, 0.25) 0%, transparent 60%),
+    radial-gradient(500px 350px at 95% -10%, rgba(255, 255, 255, 0.18) 0%, transparent 60%),
+    var(--lp-grad);
+  color: #fff;
+  max-width: 1180px;
+  margin: 18px auto 0;
+  border-radius: 28px;
+  padding: 64px 0 72px;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-hero-grid {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
-  gap: 56px;
+  gap: 48px;
   align-items: center;
 }
 
@@ -661,30 +683,32 @@ button.mic.live {
 
 .lp-badge {
   display: inline-block;
-  border: 1px solid rgba(237, 156, 87, 0.6);
-  color: var(--lp-amber);
-  background: rgba(237, 156, 87, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   padding: 7px 18px;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.16em;
-  margin-bottom: 26px;
+  margin-bottom: 24px;
 }
 
 .lp-hero h1 {
-  margin: 0 0 24px;
-  font-size: 3.6rem;
-  font-weight: 600;
+  margin: 0 0 20px;
+  font-size: 3.3rem;
+  font-weight: 800;
   line-height: 1.12;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.06);
 }
 
 .lp-lede {
   font-size: 1.15rem;
   line-height: 1.65;
-  color: rgba(247, 239, 223, 0.9);
-  margin: 0 0 30px;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 28px;
   max-width: 560px;
+  font-weight: 600;
 }
 
 .lp-ctas {
@@ -700,9 +724,9 @@ button.mic.live {
 .lp-stats {
   display: flex;
   gap: 40px;
-  margin-top: 44px;
-  padding-top: 28px;
-  border-top: 1px solid rgba(247, 239, 223, 0.18);
+  margin-top: 40px;
+  padding-top: 26px;
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
   flex-wrap: wrap;
 }
 
@@ -712,14 +736,15 @@ button.mic.live {
 
 .lp-stats strong {
   display: block;
-  color: var(--lp-amber);
+  color: #ffe9a8;
+  font-family: "Baloo 2", "Nunito", sans-serif;
   font-size: 2rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .lp-stats span {
   font-size: 0.85rem;
-  color: rgba(247, 239, 223, 0.75);
+  color: rgba(255, 255, 255, 0.85);
   line-height: 1.45;
   font-weight: 600;
 }
@@ -728,40 +753,43 @@ button.mic.live {
   width: 100%;
   border-radius: 24px;
   display: block;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.35);
+  border: 6px solid #fff;
+  box-shadow: 0 24px 60px rgba(214, 51, 91, 0.35);
 }
 
 .lp-art-framed {
   background: #fff;
-  padding: 12px;
-  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+  padding: 8px;
 }
 
 /* Sections */
 .lp-section {
-  padding: 88px 0;
+  padding: 72px 0;
 }
 
 .lp-cream {
-  background: var(--lp-cream);
   color: var(--lp-ink);
 }
 
 .lp-peach {
-  background: var(--lp-peach);
+  background: #ffeee7;
   color: var(--lp-ink);
 }
 
 .lp-plum {
   background:
-    radial-gradient(700px 500px at 88% 110%, rgba(237, 156, 87, 0.2) 0%, transparent 60%),
-    linear-gradient(150deg, #4a2a56 0%, var(--lp-plum-2) 80%);
-  color: var(--lp-cream-text);
+    radial-gradient(600px 400px at 88% 110%, rgba(255, 213, 79, 0.22) 0%, transparent 60%),
+    var(--lp-grad);
+  color: #fff;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-radius: 28px;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-eyebrow {
   display: block;
-  color: #c9762e;
+  color: #ff5e7e;
   font-size: 0.74rem;
   font-weight: 800;
   letter-spacing: 0.22em;
@@ -769,13 +797,13 @@ button.mic.live {
 }
 
 .lp-plum .lp-eyebrow {
-  color: var(--lp-amber);
+  color: #ffe9a8;
 }
 
 .lp-section h2 {
-  margin: 0 0 20px;
-  font-size: 2.4rem;
-  font-weight: 600;
+  margin: 0 0 18px;
+  font-size: 2.2rem;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -787,13 +815,13 @@ button.mic.live {
 
 .lp-plum p,
 .lp-plum li {
-  color: rgba(247, 239, 223, 0.88);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .lp-split {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
-  gap: 56px;
+  gap: 48px;
   align-items: center;
 }
 
@@ -804,9 +832,9 @@ button.mic.live {
 }
 
 .lp-callout {
-  background: rgba(237, 156, 87, 0.14);
-  border: 1px solid rgba(237, 156, 87, 0.5);
-  border-radius: 16px;
+  background: #fff1ec;
+  border: 2px solid #ffd0dc;
+  border-radius: 18px;
   padding: 18px 22px;
   line-height: 1.65;
   font-weight: 700;
@@ -830,10 +858,10 @@ button.mic.live {
 }
 
 .lp-sparks li::before {
-  content: "✦";
+  content: "\2726";
   position: absolute;
   left: 0;
-  color: var(--lp-amber);
+  color: #ffe9a8;
 }
 
 .lp-center-head {
@@ -842,22 +870,21 @@ button.mic.live {
 }
 
 .lp-sub {
-  color: var(--lp-ink-soft);
+  color: var(--lp-muted);
 }
 
 /* How it works steps */
 .lp-steps {
-  margin-top: 46px;
+  margin-top: 42px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
   max-width: 860px;
-  position: relative;
 }
 
 .lp-step {
   display: flex;
-  gap: 22px;
+  gap: 20px;
   align-items: flex-start;
 }
 
@@ -866,29 +893,31 @@ button.mic.live {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--lp-purple);
+  background: var(--lp-grad);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Lora", serif;
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-weight: 800;
+  font-size: 1.15rem;
   margin-top: 10px;
+  box-shadow: 0 6px 14px rgba(255, 94, 126, 0.3);
 }
 
 .lp-step-card {
   flex: 1;
   background: #fff;
-  border-radius: 20px;
-  padding: 22px 26px;
-  box-shadow: 0 10px 30px rgba(61, 39, 73, 0.08);
+  border: 2px solid var(--lp-border);
+  border-radius: 22px;
+  padding: 20px 26px;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-step-card h3 {
-  margin: 0 0 10px;
-  font-size: 1.2rem;
-  font-weight: 700;
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -896,35 +925,37 @@ button.mic.live {
 }
 
 .lp-tag {
-  font-family: "Nunito Sans", sans-serif;
-  background: var(--lp-peach);
-  color: #8a5a2a;
+  font-family: "Nunito", sans-serif;
+  background: #fff1ec;
+  border: 2px solid #ffd0dc;
+  color: #ff5e7e;
   border-radius: 999px;
-  padding: 3px 12px;
-  font-size: 0.66rem;
+  padding: 2px 12px;
+  font-size: 0.64rem;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
 
 .lp-step-card p {
   margin: 0;
-  color: var(--lp-ink-soft);
+  color: #6d5b74;
   font-weight: 600;
 }
 
 /* Agentic + white cards */
 .lp-agentic-grid {
-  margin-top: 42px;
+  margin-top: 40px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  gap: 18px;
 }
 
 .lp-white-card {
   background: #fff;
-  border-radius: 20px;
-  padding: 26px 28px;
-  box-shadow: 0 10px 30px rgba(61, 39, 73, 0.08);
+  border: 2px solid var(--lp-border);
+  border-radius: 22px;
+  padding: 24px 26px;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-card-icon {
@@ -934,14 +965,14 @@ button.mic.live {
 }
 
 .lp-white-card h3 {
-  margin: 0 0 10px;
-  font-size: 1.15rem;
-  font-weight: 700;
+  margin: 0 0 8px;
+  font-size: 1.12rem;
+  font-weight: 800;
 }
 
 .lp-white-card p {
   margin: 0;
-  color: var(--lp-ink-soft);
+  color: #6d5b74;
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -959,7 +990,7 @@ button.mic.live {
 
 /* Tech stack */
 .lp-stack {
-  margin-top: 42px;
+  margin-top: 40px;
   max-width: 860px;
   display: flex;
   flex-direction: column;
@@ -972,9 +1003,10 @@ button.mic.live {
   gap: 20px;
   align-items: center;
   background: #fff;
-  border-radius: 14px;
-  padding: 16px 24px;
-  box-shadow: 0 6px 18px rgba(61, 39, 73, 0.06);
+  border: 2px solid var(--lp-border);
+  border-radius: 16px;
+  padding: 14px 24px;
+  box-shadow: 0 6px 18px rgba(255, 94, 126, 0.08);
 }
 
 @media (max-width: 720px) {
@@ -988,20 +1020,20 @@ button.mic.live {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
-  color: var(--lp-ink-soft);
+  color: #ff5e7e;
 }
 
 .lp-stack-value {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .lp-realmock {
-  margin-top: 26px;
+  margin-top: 24px;
   max-width: 860px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 18px;
 }
 
 @media (max-width: 720px) {
@@ -1012,7 +1044,7 @@ button.mic.live {
 
 /* Demo flow */
 .lp-demo-list {
-  margin-top: 42px;
+  margin-top: 40px;
   max-width: 760px;
   display: flex;
   flex-direction: column;
@@ -1023,15 +1055,16 @@ button.mic.live {
   display: flex;
   gap: 20px;
   align-items: baseline;
-  background: rgba(247, 239, 223, 0.07);
-  border: 1px solid rgba(247, 239, 223, 0.12);
-  border-radius: 16px;
-  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 18px;
+  padding: 14px 22px;
 }
 
 .lp-demo-num {
-  color: var(--lp-amber);
-  font-weight: 700;
+  color: #ffe9a8;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-weight: 800;
   font-size: 1.15rem;
   flex-shrink: 0;
 }
@@ -1043,32 +1076,36 @@ button.mic.live {
 
 /* Roadmap */
 .lp-roadmap {
-  margin-top: 42px;
+  margin-top: 40px;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  gap: 18px;
 }
 
 /* Footer */
 .lp-footer {
   background:
-    radial-gradient(600px 400px at 50% 130%, rgba(237, 156, 87, 0.25) 0%, transparent 65%),
-    linear-gradient(165deg, #472853 0%, #241428 85%);
-  color: var(--lp-cream-text);
+    radial-gradient(500px 350px at 50% 130%, rgba(255, 213, 79, 0.3) 0%, transparent 65%),
+    var(--lp-grad);
+  color: #fff;
   text-align: center;
-  padding: 96px 0;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-radius: 28px;
+  padding: 80px 0;
+  box-shadow: var(--lp-shadow);
 }
 
 .lp-footer h2 {
-  margin: 0 0 14px;
-  font-size: 2.5rem;
-  font-weight: 600;
+  margin: 0 0 12px;
+  font-size: 2.3rem;
+  font-weight: 800;
 }
 
 .lp-footer p {
-  color: rgba(247, 239, 223, 0.75);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 600;
-  margin: 0 0 32px;
+  margin: 0 0 28px;
 }
 
 .lp-footer .lp-ctas {

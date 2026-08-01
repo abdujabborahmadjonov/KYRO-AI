@@ -4,6 +4,7 @@
  * Dark plum + cream + amber, Lora serif display, Nunito Sans body.
  */
 import { useBackgroundMusic } from "./lib/music";
+import { Mascot } from "./components/Mascot";
 
 const STEPS = [
   {
@@ -106,7 +107,7 @@ export function Landing() {
     <div className="lp">
       <nav className="lp-nav">
         <a className="lp-brand" href="/">
-          🧸 <span>Kyro</span>
+          <Mascot size={38} /> <span>Kyro</span>
         </a>
         <div className="lp-nav-links">
           <a href="#problem">Problem</a>
