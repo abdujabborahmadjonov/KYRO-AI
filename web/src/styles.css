@@ -1,0 +1,282 @@
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0f1220;
+  --card: #1a1f35;
+  --card-border: #2a3155;
+  --text: #eef0fb;
+  --muted: #9aa3c7;
+  --accent: #7c5cff;
+  --accent-2: #4fc3f7;
+  --good: #4db6ac;
+}
+
+body {
+  margin: 0;
+  font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  background: radial-gradient(1200px 600px at 80% -10%, #232a52 0%, var(--bg) 60%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.header p {
+  margin: 4px 0 20px;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 300px 380px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.card h2 {
+  margin: 0 0 12px;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pill.medplum {
+  background: rgba(77, 182, 172, 0.2);
+  color: var(--good);
+}
+
+.pill.mock {
+  background: rgba(255, 213, 79, 0.15);
+  color: #ffd54f;
+}
+
+.chart {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart div {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.chart dd {
+  margin: 2px 0 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.banner {
+  background: rgba(255, 213, 79, 0.12);
+  border: 1px solid rgba(255, 213, 79, 0.4);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin: 8px 0;
+}
+
+.banner.error {
+  background: rgba(240, 98, 146, 0.12);
+  border-color: rgba(240, 98, 146, 0.5);
+}
+
+/* Chat */
+.chat .messages {
+  height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.msg {
+  max-width: 85%;
+  padding: 9px 13px;
+  border-radius: 14px;
+  line-height: 1.4;
+  font-size: 0.92rem;
+}
+
+.msg.assistant {
+  background: #262e52;
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+
+.msg.user {
+  background: var(--accent);
+  border-bottom-right-radius: 4px;
+  align-self: flex-end;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.composer input {
+  flex: 1;
+  background: #12162a;
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 0.92rem;
+}
+
+.composer input:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+button {
+  background: var(--accent);
+  border: none;
+  color: white;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.mic {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  background: #2a3155;
+}
+
+button.mic.live {
+  background: #e5484d;
+}
+
+.cta {
+  padding: 14px;
+  font-size: 1rem;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+/* Storybook */
+.storybook .dedication {
+  color: var(--muted);
+  font-style: italic;
+  margin-top: -4px;
+}
+
+.illustration {
+  width: 100%;
+  border-radius: 16px;
+  display: block;
+}
+
+.page-text {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  min-height: 70px;
+}
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.filed {
+  margin-top: 16px;
+  border-top: 1px solid var(--card-border);
+  padding-top: 12px;
+}
+
+.filed h3 {
+  margin: 0 0 8px;
+  font-size: 0.9rem;
+  color: var(--good);
+}
+
+.filed ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filed code {
+  background: #12162a;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.coverage-plain {
+  background: rgba(77, 182, 172, 0.12);
+  border: 1px solid rgba(77, 182, 172, 0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.storybook.empty p {
+  line-height: 1.6;
+}
