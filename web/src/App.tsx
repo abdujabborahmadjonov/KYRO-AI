@@ -46,18 +46,21 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="hero">
-        <Mascot />
-        <div>
+      <nav className="topbar">
+        <div className="brand">
+          <Mascot size={44} />
           <h1 className="logo">
             <span>K</span>
             <span>y</span>
             <span>r</span>
             <span>o</span>
           </h1>
-          <p>Brave stories for brave kids — starring you! 🌟</p>
+          <span className="tagline">Brave stories for brave kids 🌟</span>
         </div>
-      </header>
+        {ctx && (
+          <span className={`pill ${ctx.fhirMode}`}>{ctx.fhirMode === "medplum" ? "Medplum EHR" : "demo chart"}</span>
+        )}
+      </nav>
 
       {ctxError && (
         <div className="banner error">
@@ -65,13 +68,10 @@ export default function App() {
         </div>
       )}
 
-      <div className="grid">
-        <section className="col">
-          <ChartPanel ctx={ctx} />
-          <CoverageCard />
-        </section>
+      <ChartPanel ctx={ctx} />
 
-        <section className="col">
+      <div className="workspace">
+        <section className="col chat-col">
           <ChatPanel
             ctx={ctx}
             conversation={conversation}
@@ -84,9 +84,10 @@ export default function App() {
             {generating ? "✨ Writing the story…" : "📖 Generate the storybook"}
           </button>
           {storyError && <div className="banner error">{storyError}</div>}
+          <CoverageCard />
         </section>
 
-        <section className="col wide">
+        <section className="col story-col">
           <Storybook result={storyResult} generating={generating} />
         </section>
       </div>

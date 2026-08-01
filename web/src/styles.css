@@ -29,65 +29,167 @@ body {
 }
 
 .app {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 20px 32px 40px;
 }
 
-/* ---------- Hero ---------- */
-.hero {
+/* ---------- Top navbar ---------- */
+.topbar {
   display: flex;
   align-items: center;
-  gap: 20px;
-  background: var(--grad);
-  border-radius: 28px;
-  padding: 22px 30px;
-  margin-bottom: 22px;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 2px solid var(--card-border);
+  border-radius: 20px;
+  padding: 10px 22px;
+  margin-bottom: 20px;
   box-shadow: var(--shadow);
+  position: sticky;
+  top: 12px;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
 .mascot {
-  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 4px 8px rgba(255, 94, 126, 0.25));
   flex-shrink: 0;
 }
 
-.hero h1 {
+.topbar h1 {
   margin: 0;
   font-family: "Baloo 2", "Nunito", sans-serif;
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.01em;
 }
 
 .logo span {
   display: inline-block;
-  color: #fff;
-  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.08);
+  text-shadow: 0 2px 0 rgba(255, 94, 126, 0.15);
 }
 
-.logo span:nth-child(1) { color: #ffffff; }
-.logo span:nth-child(2) { color: #ffe9a8; }
-.logo span:nth-child(3) { color: #c9fff8; }
-.logo span:nth-child(4) { color: #ffd6f2; }
+.logo span:nth-child(1) { color: #ff5e7e; }
+.logo span:nth-child(2) { color: #ffb340; }
+.logo span:nth-child(3) { color: #26bfae; }
+.logo span:nth-child(4) { color: #b388ff; }
 
-.hero p {
-  margin: 6px 0 0;
-  color: rgba(255, 255, 255, 0.92);
+.tagline {
+  color: var(--muted);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
+  margin-left: 6px;
 }
 
-/* ---------- Layout ---------- */
-.grid {
+@media (max-width: 720px) {
+  .tagline {
+    display: none;
+  }
+}
+
+/* ---------- Patient banner ---------- */
+.patient-banner {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 18px 24px;
+}
+
+.patient-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 220px;
+}
+
+.patient-id strong {
+  display: block;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 1.25rem;
+}
+
+.patient-id .muted {
+  font-size: 0.85rem;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--grad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Baloo 2", "Nunito", sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  box-shadow: 0 6px 14px rgba(255, 94, 126, 0.3);
+}
+
+.stat-tiles {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.stat-tile {
+  background: #fff9f6;
+  border-radius: 16px;
+  padding: 10px 16px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.stat-tile dt {
+  font-size: 0.66rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--coral);
+}
+
+.stat-tile dd {
+  margin: 3px 0 0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.team-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.team-chip {
+  background: #fff;
+  border: 2px solid var(--card-border);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ---------- Workspace ---------- */
+.workspace {
   display: grid;
-  grid-template-columns: 300px 380px 1fr;
-  gap: 18px;
+  grid-template-columns: minmax(400px, 480px) 1fr;
+  gap: 20px;
   align-items: start;
 }
 
-@media (max-width: 1100px) {
-  .grid {
+@media (max-width: 1000px) {
+  .workspace {
     grid-template-columns: 1fr;
   }
 }
@@ -206,7 +308,7 @@ body {
 }
 
 .chat .messages {
-  height: 320px;
+  height: 380px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -312,6 +414,30 @@ button.mic.live {
 }
 
 /* ---------- Storybook ---------- */
+.storybook {
+  min-height: 560px;
+}
+
+.book-spread {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 24px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+@media (max-width: 720px) {
+  .book-spread {
+    grid-template-columns: 1fr;
+  }
+}
+
+.book-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .storybook .dedication {
   color: var(--muted);
   font-style: italic;

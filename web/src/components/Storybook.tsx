@@ -13,17 +13,18 @@ function Illustration({ emoji, prompt, index }: { emoji: string; prompt: string;
   const [a, b] = PALETTES[index % PALETTES.length];
   const id = `grad-${index}`;
   return (
-    <svg viewBox="0 0 400 240" role="img" aria-label={prompt} className="illustration">
+    <svg viewBox="0 0 400 300" role="img" aria-label={prompt} className="illustration">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor={a} />
           <stop offset="100%" stopColor={b} />
         </linearGradient>
       </defs>
-      <rect width="400" height="240" rx="16" fill={`url(#${id})`} />
-      <circle cx="340" cy="45" r="22" fill="#fff" opacity="0.35" />
-      <circle cx="60" cy="190" r="34" fill="#fff" opacity="0.2" />
-      <text x="200" y="135" textAnchor="middle" fontSize="84">
+      <rect width="400" height="300" rx="20" fill={`url(#${id})`} />
+      <circle cx="340" cy="55" r="26" fill="#fff" opacity="0.35" />
+      <circle cx="60" cy="240" r="40" fill="#fff" opacity="0.2" />
+      <circle cx="380" cy="270" r="18" fill="#fff" opacity="0.25" />
+      <text x="200" y="172" textAnchor="middle" fontSize="104">
         {emoji}
       </text>
     </svg>
@@ -63,22 +64,25 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
       <h2>📖 {story.title}</h2>
       <p className="dedication">{story.dedication}</p>
 
-      <Illustration emoji={current.illustration_emoji} prompt={current.illustration_prompt} index={page} />
-      <p className="page-text">{current.text}</p>
-
-      <div className="pager">
-        <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
-          ← Back
-        </button>
-        <span>
-          Page {Math.min(page + 1, story.pages.length)} of {story.pages.length}
-        </span>
-        <button
-          onClick={() => setPage((p) => Math.min(story.pages.length - 1, p + 1))}
-          disabled={page >= story.pages.length - 1}
-        >
-          Next →
-        </button>
+      <div className="book-spread">
+        <Illustration emoji={current.illustration_emoji} prompt={current.illustration_prompt} index={page} />
+        <div className="book-right">
+          <p className="page-text">{current.text}</p>
+          <div className="pager">
+            <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={page === 0}>
+              ← Back
+            </button>
+            <span>
+              Page {Math.min(page + 1, story.pages.length)} of {story.pages.length}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(story.pages.length - 1, p + 1))}
+              disabled={page >= story.pages.length - 1}
+            >
+              Next →
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="filed">
