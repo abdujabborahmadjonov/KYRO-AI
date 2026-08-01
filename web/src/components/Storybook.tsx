@@ -2,11 +2,11 @@ import { useState } from "react";
 import type { StoryResult } from "../lib/api";
 
 const PALETTES = [
-  ["#7c5cff", "#4fc3f7"],
-  ["#ff8a65", "#ffd54f"],
-  ["#4db6ac", "#aed581"],
-  ["#f06292", "#ba68c8"],
-  ["#64b5f6", "#81c784"],
+  ["#ff9a7b", "#ff5e7e"],
+  ["#ffd54f", "#ff8a65"],
+  ["#4dd0c4", "#aed581"],
+  ["#f48fb1", "#b388ff"],
+  ["#81d4fa", "#4dd0c4"],
 ];
 
 function Illustration({ emoji, prompt, index }: { emoji: string; prompt: string; index: number }) {
@@ -47,7 +47,7 @@ export function Storybook({ result, generating }: { result: StoryResult | null; 
       <div className="card storybook empty">
         <h2>📖 The Storybook</h2>
         <p className="muted">
-          Talk with BraveTales first (or don't — it works either way), then hit{" "}
+          Talk with Kyro first (or don't — it works either way), then hit{" "}
           <strong>Generate the storybook</strong>. The finished book is filed back to the chart as a
           DocumentReference + Communication.
         </p>

@@ -87,7 +87,7 @@ export function ChatPanel({ ctx, conversation, setConversation, fears, onFear, o
   return (
     <div className="card chat">
       <h2>
-        🎙️ Talk with KYRO{" "}
+        🎙️ Talk with Kyro{" "}
         {voiceState === "live" && <span className="pill medplum">{AGENT_STATE_LABEL[agentState]}</span>}
         <button
           className={`mic ${voiceState}`}

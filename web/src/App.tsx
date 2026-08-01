@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type ChatMessage, type PatientContext, type StoryResult } from "./lib/api";
 import { ChartPanel } from "./components/ChartPanel";
+import { Mascot } from "./components/Mascot";
 import { ChatPanel } from "./components/ChatPanel";
 import { Storybook } from "./components/Storybook";
 import { CoverageCard } from "./components/CoverageCard";
@@ -45,9 +46,17 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <h1>🧸 KYRO AI</h1>
-        <p>Voice-powered, chart-aware storybooks — the child is the hero of their own real procedure.</p>
+      <header className="hero">
+        <Mascot />
+        <div>
+          <h1 className="logo">
+            <span>K</span>
+            <span>y</span>
+            <span>r</span>
+            <span>o</span>
+          </h1>
+          <p>Brave stories for brave kids — starring you! 🌟</p>
+        </div>
       </header>
 
       {ctxError && (
