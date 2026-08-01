@@ -73,9 +73,13 @@ npm run seed
 # Index the pediatric education corpus (local BM25 + Moss if key set)
 npm run index-corpus
 
-# Run — server on :8787, web app on :5173
+# Run — server on :8787, web on :5173 (landing page at /, demo app at /app)
 npm run dev
 ```
+
+> 🖼️ Mascot art: drop your generated mascot images into `web/public/mascots/` as
+> `checkup.png` and `nurse.png` — the landing page picks them up automatically
+> (it shows an SVG fallback until then).
 
 ## Demo Flow (3 minutes)
 
