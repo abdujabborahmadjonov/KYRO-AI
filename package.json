@@ -10,6 +10,7 @@
     "dev:web": "vite",
     "seed": "tsx scripts/seed.ts",
     "index-corpus": "tsx scripts/index-corpus.ts",
+    "smoke:voice": "node scripts/voice-smoke.mjs",
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
