@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.115.0",
-    "@deepgram/sdk": "^3.9.0",
+    "@deepgram/sdk": "^5.10.1",
     "@medplum/core": "^3.2.0",
     "@medplum/fhirtypes": "^3.2.0",
     "cors": "^2.8.5",
