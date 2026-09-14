@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.115.0",
+    "@anthropic-ai/sdk": "^0.125.0",
     "@deepgram/sdk": "^3.9.0",
     "@medplum/core": "^3.2.0",
     "@medplum/fhirtypes": "^3.2.0",
@@ -25,8 +25,8 @@
     "express": "^4.21.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tsx": "^4.23.1",
-    "ws": "^8.18.0"
+    "tsx": "^4.23.13",
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
