@@ -1,10 +1,17 @@
 # One-click Render deployment for Kyro.
 # In Render: New → Blueprint → select this repo → set the secret env vars.
+#
+# autoDeploy is off on purpose: GitHub Actions (.github/workflows/ci.yml) runs
+# typecheck + build + a boot smoke test on every push to main and only then fires
+# the service's Deploy Hook. Set the hook URL as the RENDER_DEPLOY_HOOK_URL secret
+# in the GitHub repo, or flip autoDeploy back to true to deploy straight from git.
 services:
   - type: web
     name: kyro
     runtime: node
     plan: free
+    branch: main
+    autoDeploy: false
     buildCommand: npm ci && npm run build && npm run index-corpus
     startCommand: npm start
     healthCheckPath: /api/health

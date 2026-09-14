@@ -4,6 +4,8 @@
 
 Built at the Medplum Hackathon @ Y Combinator · August 2026
 
+[![CI](https://github.com/abdujabborahmadjonov/KYRO-AI/actions/workflows/ci.yml/badge.svg)](https://github.com/abdujabborahmadjonov/KYRO-AI/actions/workflows/ci.yml)
+
 ---
 
 ## The Problem
@@ -97,6 +99,25 @@ and the disk is ephemeral — generated stories/illustrations reset on redeploys
 Medplum credentials for durable, chart-native storage.
 
 Local production run: `npm run build && npm start`.
+
+## CI/CD (GitHub Actions → Render)
+
+Every push and pull request runs [ci.yml](.github/workflows/ci.yml): `npm ci`, typecheck,
+Vite build, then it boots the production server and requires `/api/health` to answer 200.
+Pushes to `main` that pass then trigger a Render deploy through the service's Deploy Hook.
+Render's own git auto-deploy is turned off in `render.yaml`, so only green builds ship.
+
+One-time setup after the blueprint exists:
+
+1. Render → **kyro** service → **Settings → Deploy Hook** → copy the URL.
+2. GitHub → repo **Settings → Secrets and variables → Actions → New repository secret**:
+   name `RENDER_DEPLOY_HOOK_URL`, value = that URL.
+3. Optional: add a repository **variable** `RENDER_HEALTH_URL`
+   (e.g. `https://kyro.onrender.com/api/health`) and the deploy job will wait until the
+   new build is live before it reports success.
+
+Dependabot opens weekly PRs for npm and GitHub Actions updates
+([dependabot.yml](.github/dependabot.yml)); CI runs on each one, so merging is safe when green.
 
 ## Demo Flow (3 minutes)
 

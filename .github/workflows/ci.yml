@@ -1,0 +1,113 @@
+# CI/CD for Kyro.
+#
+#   pull_request → check   (typecheck, build, boot the production server, hit /api/health)
+#   push to main → check → deploy   (fires the Render deploy hook only when check is green)
+#
+# Required repo secret for deploys:  RENDER_DEPLOY_HOOK_URL
+#   Render dashboard → kyro service → Settings → Deploy Hook → copy URL
+#   GitHub → repo → Settings → Secrets and variables → Actions → New repository secret
+# Optional repo variable:            RENDER_HEALTH_URL  (e.g. https://kyro.onrender.com/api/health)
+#   When set, the deploy job waits for the new build to answer 200 before it reports success.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Typecheck, build, smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Boot production server and check /api/health
+        env:
+          API_PORT: "4577"
+        run: |
+          set -euo pipefail
+          npm start > server.log 2>&1 &
+          SERVER_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${API_PORT}/api/health" > health.json; then
+              echo "Healthy after ${i}s:"; cat health.json; echo
+              kill "$SERVER_PID"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Server never answered /api/health"; cat server.log
+          kill "$SERVER_PID" || true
+          exit 1
+
+      - name: Keep built assets for inspection
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+          if-no-files-found: ignore
+
+  deploy:
+    name: Deploy to Render
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ vars.RENDER_HEALTH_URL }}
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$HOOK" ]; then
+            echo "::error::RENDER_DEPLOY_HOOK_URL secret is not set. Render → kyro → Settings → Deploy Hook, then add it under GitHub Settings → Secrets → Actions."
+            exit 1
+          fi
+          curl -sf -X POST "$HOOK" -o /dev/null
+          echo "Deploy triggered for ${GITHUB_SHA}"
+
+      - name: Wait for the new build to become healthy
+        if: vars.RENDER_HEALTH_URL != ''
+        env:
+          URL: ${{ vars.RENDER_HEALTH_URL }}
+        run: |
+          set -euo pipefail
+          # Render builds take a few minutes on the free tier; poll up to ~12 min.
+          for i in $(seq 1 72); do
+            if curl -sf --max-time 10 "$URL" > /dev/null; then
+              echo "Healthy: $URL"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$URL did not return 200 within 12 minutes — check the Render dashboard."
+          exit 1
